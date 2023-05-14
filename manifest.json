@@ -1,0 +1,19 @@
+{
+    "manifest_version": 3,
+    "name": "VK Message Blocker",
+    "description": "Blocks messages from select VK users",
+    "permissions": ["storage", "tabs"],
+    "version": "1.0",
+    "action": {
+      "default_popup": "popup/index.html"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://vk.com/im*"],
+            "js": ["contentScript.js"]
+        }
+    ]
+}
