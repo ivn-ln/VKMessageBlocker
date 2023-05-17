@@ -12,7 +12,7 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://vk.com/im*"],
+            "matches": ["https://vk.com/*"],
             "js": ["contentScript.js"]
         }
     ]
