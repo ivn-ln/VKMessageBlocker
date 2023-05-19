@@ -64,6 +64,7 @@ async function main(){
         resolve(Object.values(items['blockedU'][0]))
     })})
     blockedUsers = await getBlockedUsers;
+    getBlockedUsersNicknames()
     //Add listeners for vk popup and new messages in chat container
     const popup = document.getElementById('box_layer_wrap')
     popup.addEventListener('DOMNodeInserted', addBlockButtons)
@@ -74,6 +75,14 @@ async function main(){
         return
     }
     blockMessageBlocks()
+}
+
+async function getBlockedUsersNicknames(){
+    //Requires vk token to be set up so impossible for now
+    for(i in blockedUsers){
+        if(blockedUsers.length==0){break}
+        const url = 'https://vk.com' + blockedUsers[i]
+    }
 }
 
 function blockMessageBlocks(shouldUnblockRest=false){

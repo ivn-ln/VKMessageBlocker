@@ -9,4 +9,4 @@ chrome.tabs.onUpdated.addListener(async (tabId, tab) => {
             });
         }
     });
-});      
+});   
