@@ -1,12 +1,23 @@
-//Script options, should have made them an object
-let active = true;
-let shouldBlockLinks = false;
-let shouldBlockReposts = false;
-let shouldBLockMedia = false;
-let blockedText = 'Сообщение заблокировано';
-let shouldCollapse = false;
+//Script options
+const defaultOptions = {
+    active: true,
+    shouldBlockLinks: false,
+    shouldBlockReposts: false,
+    shouldBLockMedia: false,
+    blockedText: 'Сообщение заблокировано',
+    shouldCollapse: false,
+    shouldBlockPreview: true,
+};
+
+let active = defaultOptions['active'];
+let shouldBlockLinks = defaultOptions['shouldBlockLinks'];
+let shouldBlockReposts = defaultOptions['shouldBlockReposts'];
+let shouldBLockMedia = defaultOptions['shouldBLockMedia'];
+let blockedText = defaultOptions['blockedText'];
+let shouldCollapse = defaultOptions['shouldCollapse'];
+let shouldBlockPreview = defaultOptions['shouldBlockPreview'];
+
 let blockedUsers = [];
-let shouldBlockPreview = true;
 
 class banButton{
     constructor(text, userID){
@@ -21,6 +32,20 @@ class banButton{
 
 
 (async ()=>{
+    let getOptions = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
+        if(items['options']==undefined || items['options'][0]==undefined){
+            console.log('No options set')
+        }
+        else{
+            const options = items['options']
+            active = defaultOptions['active'];
+            shouldBlockLinks = defaultOptions['shouldBlockLinks'];
+            shouldBlockReposts = defaultOptions['shouldBlockReposts'];
+            shouldBLockMedia = defaultOptions['shouldBLockMedia'];
+            blockedText = defaultOptions['blockedText'];
+            shouldCollapse = defaultOptions['shouldCollapse'];
+            shouldBlockPreview = defaultOptions['shouldBlockPreview'];
+    }})})
     if(!active){return}
     //Check if url is vk messenger page
     let getCorrectUrl = new Promise((resolve, reject)=>chrome.runtime.onMessage.addListener((obj, sender, response) => {
@@ -69,7 +94,6 @@ async function blockPreview(){
 async function main(){
     //Await to get blocked users from chrome sync storage
     let getBlockedUsers = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
-        console.log(items)
         if(items['blockedU']==undefined || items['blockedU'][0]==undefined){
             chrome.storage.sync.set({})
             console.log('No blocked users to read')
@@ -140,7 +164,7 @@ function onBanButtonPressed(input){
         button.value = '📢 Unblock'
     }
     //Stores changed blocked users var in chrome sync storage
-    console.log(chrome.storage.sync.set({blockedU: [blockedUsers]}))
+    console.log(chrome.storage.sync.set({'blockedU': [blockedUsers]}))
     //Redones block message blocks with new block list
     blockMessageBlocks(true)
 }

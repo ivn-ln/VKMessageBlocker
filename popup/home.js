@@ -1,4 +1,17 @@
 let blockedUsers = [];
+
+const defaultOptions = {
+    active: true,
+    shouldBlockLinks: false,
+    shouldBlockReposts: false,
+    shouldBLockMedia: false,
+    blockedText: 'Сообщение заблокировано',
+    shouldCollapse: false,
+    shouldBlockPreview: true,
+};
+
+let options = defaultOptions;
+
 (async()=>{
     chrome.tabs.query({'active': true}, (tabs) => {
         const tabId = tabs[0].url
@@ -48,6 +61,22 @@ let blockedUsers = [];
     }
     checkNoBlockedUsers('No blocked users')
     userComponentTemplate.setAttribute('style', 'opacity: 0; height:0px')
+    let getOptions = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
+        if(items['options']==undefined || items['options'][0]==undefined){
+            console.log('No options set')
+        }
+        else{
+            options = items['options']
+            active = defaultOptions['active'];
+            shouldBlockLinks = defaultOptions['shouldBlockLinks'];
+            shouldBlockReposts = defaultOptions['shouldBlockReposts'];
+            shouldBLockMedia = defaultOptions['shouldBLockMedia'];
+            blockedText = defaultOptions['blockedText'];
+            shouldCollapse = defaultOptions['shouldCollapse'];
+            shouldBlockPreview = defaultOptions['shouldBlockPreview'];
+            }
+    })})
+    if(options['active']){document.getElementsByClassName('onSwitch')[0].click()}
 })()
 
 function checkNoBlockedUsers(newText){
@@ -57,16 +86,12 @@ function checkNoBlockedUsers(newText){
 function unblockUser(input){
     const userComponent = input.target.parentElement
     const user = userComponent.getAttribute('id')
-    if(blockedUsers.includes(user)){
-        blockedUsers.splice(blockedUsers.indexOf(user), 1)
-        console.log(blockedUsers)
-    }
+    if(blockedUsers.includes(user)){blockedUsers.splice(blockedUsers.indexOf(user), 1)}
     chrome.storage.sync.set({'blockedU': blockedUsers})
     checkNoBlockedUsers('No blocked users')
     userComponent.remove()
     chrome.tabs.query({'active': true}, (tabs) => {
         const tabId = tabs[0]['id']
-        console.log(tabId)
         chrome.tabs.sendMessage(tabId, {
             type: "BLOCKEDUSERSCHANGED",
             tabURL: blockedUsers,
@@ -75,18 +100,11 @@ function unblockUser(input){
 }
 
 async function getUsersData(blockedUsers){
-    console.log(blockedUsers)
-    if(blockedUsers.length==undefined){
-        return
-    }
-    if(blockedUsers.length==0){
-        console.log('sadasd')
-    }
+    if(blockedUsers.length==undefined){return}
+    if(blockedUsers.length==0){return}
     let blockedUsersObjects = {}
     let userIDsString = ''
-    for(i in blockedUsers){
-        userIDsString+=blockedUsers[i].replace('/', '')+','
-    }
+    for(i in blockedUsers){userIDsString+=blockedUsers[i].replace('/', '')+','}
     const getUsersDataPromise = new Promise((resolve, reject)=> fetch('https://api.vk.com/method/users.get?' + new URLSearchParams({
         access_token: '770db9af770db9af770db9af3674199ce57770d770db9af1364ea8893c52eef5a3b318e',
         user_ids: userIDsString,
@@ -118,6 +136,7 @@ function onEnableSwitchClick(input){
     const classList = button.classList
     const components = document.getElementsByClassName('newComponent')
     if(!classList.contains('enabled')){
+        options['active'] = true
         document.getElementsByClassName('home-text7')[0].classList.remove('hidden')
         for(i in components){
             if(!components[i].nodeType){continue}
@@ -127,6 +146,7 @@ function onEnableSwitchClick(input){
         button.classList.remove('disabled')
     }
     else{
+        options['active'] = false
         document.getElementsByClassName('home-text7')[0].classList.add('hidden')
         for(i in components){
             if(!components[i].nodeType){continue}
@@ -135,4 +155,5 @@ function onEnableSwitchClick(input){
         button.classList.add('disabled')
         button.classList.remove('enabled')
     }
+    console.log(chrome.storage.sync.set({'options': options}))
 }
