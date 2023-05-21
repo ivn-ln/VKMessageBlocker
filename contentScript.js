@@ -32,15 +32,22 @@ class banButton{
 
 
 (async ()=>{
+    let noOptions = false
     let getOptions = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
         console.log(items)
         if(items['options']==undefined || items['options'][0]==undefined){
             console.log('No options set')
+            noOptions = true
         }
         resolve(items['options'])
     })})
-    options = await getOptions
-    active = options['active']
+    const options = await getOptions
+    if(noOptions){
+        active = defaultOptions['active']
+    }
+    else{
+        active = options['active']
+    }
     if(!active){return}
     //Check if url is vk messenger page
     let getCorrectUrl = new Promise((resolve, reject)=>chrome.runtime.onMessage.addListener((obj, sender, response) => {
@@ -102,7 +109,7 @@ async function main(){
             resolve(false)
             return
         }
-        resolve(Object.values(items['blockedU'][0]))
+        resolve(Object.values(items['blockedU']))
     })})
     blockedUsers = await getBlockedUsers;
     getBlockedUsersNicknames()

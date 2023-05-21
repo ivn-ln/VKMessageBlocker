@@ -13,6 +13,7 @@ const defaultOptions = {
 let options = defaultOptions;
 
 (async()=>{
+    //chrome.storage.sync.clear()
     chrome.tabs.query({'active': true}, (tabs) => {
         const tabId = tabs[0].url
         const isIM = tabId.includes('vk.com/')
@@ -34,7 +35,8 @@ let options = defaultOptions;
             resolve(false)
             return
         }
-        resolve(Object.values(items['blockedU'][0]))
+        console.log(Object.values(items['blockedU']))
+        resolve(Object.values(items['blockedU']))
     })})
     blockedUsers = await getBlockedUsers;
     let blockedUsersData = new Promise((resolve, reject)=>{resolve(getUsersData(blockedUsers))})
@@ -43,7 +45,8 @@ let options = defaultOptions;
     const languageSwitch = document.getElementsByClassName('buttonLang')[0]
     const userComponentTemplate = document.getElementsByClassName('app-component-container')[0]
     onOffSwitch.addEventListener('click', onEnableSwitchClick)
-    for(i in blockedUsers){
+    for(i in blockedUsers[0]){
+        console.log(blockedUsers[0])
         const newUserComponent = userComponentTemplate.cloneNode(true)
         newUserComponent.classList.add('hidden')
         newUserComponent.classList.add('newComponent')
@@ -61,14 +64,20 @@ let options = defaultOptions;
     }
     checkNoBlockedUsers('No blocked users')
     userComponentTemplate.setAttribute('style', 'opacity: 0; height:0px')
+    let noOptions = false
     let getOptions = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
         console.log(items)
         if(items['options']==undefined || items['options'][0]==undefined){
             console.log('No options set')
+            noOptions = true
         }
         resolve(items['options'])
     })})
     options = await getOptions
+    if(noOptions){
+        options = defaultOptions
+    }
+    console.log(options)
     if(options['active']){document.getElementsByClassName('onSwitch')[0].click()}
 })()
 
@@ -107,7 +116,7 @@ async function getUsersData(blockedUsers){
     if(blockedUsers.length==0){return}
     let blockedUsersObjects = {}
     let userIDsString = ''
-    for(i in blockedUsers){userIDsString+=blockedUsers[i].replace('/', '')+','}
+    for(i in blockedUsers[0]){userIDsString+=blockedUsers[0][i].replace('/', '')+','}
     const getUsersDataPromise = new Promise((resolve, reject)=> fetch('https://api.vk.com/method/users.get?' + new URLSearchParams({
         access_token: '770db9af770db9af770db9af3674199ce57770d770db9af1364ea8893c52eef5a3b318e',
         user_ids: userIDsString,
