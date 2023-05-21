@@ -33,19 +33,14 @@ class banButton{
 
 (async ()=>{
     let getOptions = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
+        console.log(items)
         if(items['options']==undefined || items['options'][0]==undefined){
             console.log('No options set')
         }
-        else{
-            const options = items['options']
-            active = defaultOptions['active'];
-            shouldBlockLinks = defaultOptions['shouldBlockLinks'];
-            shouldBlockReposts = defaultOptions['shouldBlockReposts'];
-            shouldBLockMedia = defaultOptions['shouldBLockMedia'];
-            blockedText = defaultOptions['blockedText'];
-            shouldCollapse = defaultOptions['shouldCollapse'];
-            shouldBlockPreview = defaultOptions['shouldBlockPreview'];
-    }})})
+        resolve(items['options'])
+    })})
+    options = await getOptions
+    active = options['active']
     if(!active){return}
     //Check if url is vk messenger page
     let getCorrectUrl = new Promise((resolve, reject)=>chrome.runtime.onMessage.addListener((obj, sender, response) => {
@@ -64,6 +59,13 @@ class banButton{
         if(type === "BLOCKEDUSERSCHANGED"){
             blockedUsers = tabURL
             blockMessageBlocks(true)
+        }
+        if(type==="OPTIONSCHANGED"){
+            active = tabURL['active']
+            if(active){
+                blockMessageBlocks()
+            }
+            else{blockMessageBlocks(shouldUnblockRest=true, customBlockedList=[])}
         }
     }))
     const isIM = await getCorrectUrl
@@ -85,7 +87,7 @@ async function blockPreview(){
         if(!messagePreview[i].nodeType){continue}
         messagePreview[i].addEventListener('DOMNodeInserted', (input)=>{
             if(input.target.parentElement==null){return}
-            input.target.parentElement.innerHTML = blockedText
+            //input.target.parentElement.innerHTML = blockedText
         })
         messagePreview[i].innerHTML = blockedText
     }
@@ -124,7 +126,8 @@ async function getBlockedUsersNicknames(){
     }
 }
 
-function blockMessageBlocks(shouldUnblockRest=false){
+function blockMessageBlocks(shouldUnblockRest=false, customBlockedList=null){
+    if(customBlockedList==null){customBlockedList=blockedUsers}
     //Get message blocks and if it's author is in block list use block func on them
     //If should unblock rest, unblock rest, which are not in the block list
     const messageBlocks = document.getElementsByClassName('ui_clean_list')
@@ -132,7 +135,7 @@ function blockMessageBlocks(shouldUnblockRest=false){
         const currMB = messageBlocks[i]
         const message = currMB.querySelectorAll('li')
         const author = currMB.parentElement.parentElement.getElementsByClassName('im-mess-stack--lnk')[0].getAttribute('href')
-        if(blockedUsers.includes(author)){blockMessagesText(message)}
+        if(customBlockedList.includes(author)){blockMessagesText(message)}
         else if(shouldUnblockRest){unblockMessagesText(message)}
     }
 }

@@ -62,25 +62,28 @@ let options = defaultOptions;
     checkNoBlockedUsers('No blocked users')
     userComponentTemplate.setAttribute('style', 'opacity: 0; height:0px')
     let getOptions = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
+        console.log(items)
         if(items['options']==undefined || items['options'][0]==undefined){
             console.log('No options set')
         }
-        else{
-            options = items['options']
-            active = defaultOptions['active'];
-            shouldBlockLinks = defaultOptions['shouldBlockLinks'];
-            shouldBlockReposts = defaultOptions['shouldBlockReposts'];
-            shouldBLockMedia = defaultOptions['shouldBLockMedia'];
-            blockedText = defaultOptions['blockedText'];
-            shouldCollapse = defaultOptions['shouldCollapse'];
-            shouldBlockPreview = defaultOptions['shouldBlockPreview'];
-            }
+        resolve(items['options'])
     })})
+    options = await getOptions
     if(options['active']){document.getElementsByClassName('onSwitch')[0].click()}
 })()
 
 function checkNoBlockedUsers(newText){
     if(Object.keys(blockedUsers).length==0){document.getElementsByClassName('home-text7')[0].innerHTML = newText}
+}
+
+function updateOptions(options){
+    chrome.tabs.query({'active': true}, (tabs) => {
+        const tabId = tabs[0]['id']
+        chrome.tabs.sendMessage(tabId, {
+            type: "OPTIONSCHANGED",
+            tabURL: options,
+        });
+    })
 }
 
 function unblockUser(input){
@@ -89,7 +92,7 @@ function unblockUser(input){
     if(blockedUsers.includes(user)){blockedUsers.splice(blockedUsers.indexOf(user), 1)}
     chrome.storage.sync.set({'blockedU': blockedUsers})
     checkNoBlockedUsers('No blocked users')
-    userComponent.remove()
+    userComponent.classList.add('hidden')
     chrome.tabs.query({'active': true}, (tabs) => {
         const tabId = tabs[0]['id']
         chrome.tabs.sendMessage(tabId, {
@@ -156,4 +159,5 @@ function onEnableSwitchClick(input){
         button.classList.remove('enabled')
     }
     console.log(chrome.storage.sync.set({'options': options}))
+    updateOptions(options)
 }
