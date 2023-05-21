@@ -1,5 +1,5 @@
 //Script options, should have made them an object
-let active = true
+let active = true;
 let shouldBlockLinks = false;
 let shouldBlockReposts = false;
 let shouldBLockMedia = false;
@@ -25,9 +25,20 @@ class banButton{
     //Check if url is vk messenger page
     let getCorrectUrl = new Promise((resolve, reject)=>chrome.runtime.onMessage.addListener((obj, sender, response) => {
         const{type, tabURL}=obj
+        console.log(type)
         if(type === "NEW"){
             const isIM = tabURL.includes('vk.com/im')|| tabURL.includes('https://vk.com/al_im')
+            //Need to check here, otherwise won't execute on message
+            console.log('Msg received, isIM: ', isIM)
+            if(isIM){
+                main()
+                blockPreview()
+            }
             resolve(isIM)
+        }
+        if(type === "BLOCKEDUSERSCHANGED"){
+            blockedUsers = tabURL
+            blockMessageBlocks(true)
         }
     }))
     const isIM = await getCorrectUrl
@@ -37,25 +48,29 @@ class banButton{
         return
     }
     else{
-        main()
-        if(shouldBlockPreview){blockPreview()}
         console.log('extension injected succesfully')
         return
     }
 })()
 
 async function blockPreview(){
+    if(!shouldBlockPreview){return}
     let messagePreview = document.getElementsByClassName('ui_clean_list')[0].getElementsByClassName('nim-dialog--preview')
     for(i in messagePreview){
         if(!messagePreview[i].nodeType){continue}
+        messagePreview[i].addEventListener('DOMNodeInserted', (input)=>{
+            if(input.target.parentElement==null){return}
+            input.target.parentElement.innerHTML = blockedText
+        })
         messagePreview[i].innerHTML = blockedText
     }
 }
 
 async function main(){
     //Await to get blocked users from chrome sync storage
-    let getBlockedUsers = new Promise((resolve, reject)=>{chrome.storage.sync.get('blockedU',(items)=>{
-        if(items['blockedU']==undefined){
+    let getBlockedUsers = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
+        console.log(items)
+        if(items['blockedU']==undefined || items['blockedU'][0]==undefined){
             chrome.storage.sync.set({})
             console.log('No blocked users to read')
             resolve(false)

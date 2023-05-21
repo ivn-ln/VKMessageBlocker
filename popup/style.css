@@ -33,6 +33,9 @@
   --dl-space-space-fourunits: 64px;
   --dl-space-space-threeunits: 48px;
   --dl-space-space-oneandhalfunits: 24px;
+  --time-transform: 0.5s;
+  --time-font-size: 0.5s;
+  --time-opacity: 0.25s;
 }
 .button {
   color: var(--dl-color-gray-black);
@@ -88,6 +91,7 @@
 }
 .componentPFP {
   width: 100px;
+  height: 30px;
   object-fit: cover;
 }
 

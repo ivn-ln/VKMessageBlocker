@@ -3,7 +3,10 @@
     "name": "VK Message Blocker",
     "description": "Blocks messages from select VK users",
     "permissions": ["storage", "tabs"],
-    "version": "1.0",
+    "version": "1.1",
+    "host_permissions": [
+        "https://api.vk.com/method/*"
+    ],
     "action": {
       "default_popup": "popup/index.html"
     },

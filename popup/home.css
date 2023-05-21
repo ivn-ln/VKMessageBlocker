@@ -1,3 +1,9 @@
+body{
+  height: 250px;
+}
+.componentName, .componentPFP, .component-trash{
+  cursor: pointer;
+}
 .app-component-container {
   width: 100%;
   height: 400px;
@@ -59,14 +65,81 @@
 .home-button1 {
   display: flex;
   flex-direction: row;
+  transition: all 0.5s ease-out;
 }
+.home-button1.enabled{
+  animation: pop 0.5s 1;
+  background: #50C878;
+  transition: all 1s;
+}
+.home-button1.disabled{
+  animation: popOut 0.5s 1;
+}
+body{
+  animation: pop2 1.0s 1 cubic-bezier(0.075, 0.82, 0.165, 1);
+  background-color: #222222;
+}
+@keyframes pop2{
+  from{
+    transform: scale(0, 0);
+  }
+  to{
+    transform: scale(1, 1);
+  }
+}
+
+@keyframes pop{
+  from{
+    transform: scale(1);
+  }
+  50%{
+    transform: scale(1.5);
+  }
+  to{
+    transform: scale(1);
+  }
+}
+@keyframes popOut{
+  from{
+    transform: scale(1);
+  }
+  50%{
+    transform: scale(0.5);
+  }
+  to{
+    transform: scale(1);
+  }
+}
+
+
+h2, .newComponent{
+  transition: transform var(--time-transform), font-size var(--time-font-size), opacity var(--time-opacity);
+  transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  font-size:large;
+  transform: scale(1, 1);
+  opacity: 1;
+  margin-block-end: 10px;
+}
+
+.hidden{
+  transition: transform var(--time-transform), font-size var(--time-font-size), opacity var(--time-opacity);
+  transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  font-size: 0px;
+  transform: scale(0, 1);
+  opacity: 0;
+}
+
+h2, h1, button{
+  margin-block-end: 10px;
+}
+
 .home-icon {
+  pointer-events: none;
   width: 24px;
   height: 24px;
 }
 @media(max-width: 479px) {
   .home-container {
-    gap: var(--dl-space-space-unit);
     flex-direction: column;
     background-color: #222222;
   }
@@ -99,6 +172,7 @@
     align-self: center;
   }
   .home-text6 {
+    pointer-events: none;
     top: 1px;
     right: 1px;
     position: absolute;
@@ -112,4 +186,7 @@
   .home-text7 {
     color: rgb(57, 125, 204);
   }
+}
+path, svg{
+  pointer-events: none;
 }
