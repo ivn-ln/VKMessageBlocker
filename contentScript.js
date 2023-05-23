@@ -41,7 +41,6 @@ class banButton{
     })})
     options = await getOptions
     if(options!=undefined){active = options['active']}
-    if(!active){return}
     //Check if url is vk messenger page
     let getCorrectUrl = new Promise((resolve, reject)=>chrome.runtime.onMessage.addListener((obj, sender, response) => {
         const{type, tabURL}=obj
@@ -52,7 +51,6 @@ class banButton{
             console.log('Msg received, isIM: ', isIM)
             if(isIM){
                 main()
-                blockPreview()
                 console.log('extension injected succesfully')
             }
             resolve(isIM)
@@ -70,6 +68,7 @@ class banButton{
             else{blockMessageBlocks(shouldUnblockRest=true, customBlockedList=[])}
         }
     }))
+    if(!active){return}
     const isIM = await getCorrectUrl
     //If it is inject script
     if(!isIM){
@@ -149,6 +148,7 @@ async function getBlockedUsersNicknames(){
 }
 
 function blockMessageBlocks(shouldUnblockRest=false, customBlockedList=null){
+    blockPreview()
     if(customBlockedList==null){customBlockedList=blockedUsers}
     //Get message blocks and if it's author is in block list use block func on them
     //If should unblock rest, unblock rest, which are not in the block list
