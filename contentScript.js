@@ -50,8 +50,10 @@ class banButton{
             //Need to check here, otherwise won't execute on message
             console.log('Msg received, isIM: ', isIM)
             if(isIM){
-                main()
-                console.log('extension injected succesfully')
+                if(active){main()
+                    //blockPreview()
+                    console.log('extension injected succesfully')
+                }
             }
             resolve(isIM)
         }
@@ -63,13 +65,14 @@ class banButton{
         if(type==="OPTIONSCHANGED"){
             active = tabURL['active']
             if(active){
-                blockMessageBlocks()
+                main()
+                //blockMessageBlocks()
             }
             else{blockMessageBlocks(shouldUnblockRest=true, customBlockedList=[])}
         }
     }))
-    if(!active){return}
     const isIM = await getCorrectUrl
+    if(!active){return}
     //If it is inject script
     if(!isIM){
         console.log('website is not vk im page')
@@ -82,16 +85,25 @@ class banButton{
 })()
 
 async function blockPreview(){
-    if(!shouldBlockPreview){return}
     let messagePreview = document.getElementsByClassName('ui_clean_list')[0].getElementsByClassName('nim-dialog--preview')
+    if(!shouldBlockPreview||!active){
+        for(i in messagePreview){
+            if(!messagePreview[i].nodeType){continue}
+            messagePreview[i].removeEventListener('DOMNodeInserted', blockSinglePreview)
+        }
+        return
+    }
     for(i in messagePreview){
         if(!messagePreview[i].nodeType){continue}
-        messagePreview[i].addEventListener('DOMNodeInserted', (input)=>{
-            if(input.target.parentElement==null){return}
-            //input.target.parentElement.innerHTML = blockedText
-        })
+        messagePreview[i].addEventListener('DOMNodeInserted', blockSinglePreview)
         messagePreview[i].innerHTML = blockedText
+
     }
+}
+
+function blockSinglePreview(input){
+    if(input.target.parentElement==null){return}
+    input.target.parentElement.innerHTML = blockedText
 }
 
 async function main(){
