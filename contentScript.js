@@ -32,22 +32,15 @@ class banButton{
 
 
 (async ()=>{
-    let noOptions = false
     let getOptions = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
         console.log(items)
-        if(items['options']==undefined || items['options'][0]==undefined){
+        if(items['options']==undefined || Object.keys(items['options'])[0]==undefined){
             console.log('No options set')
-            noOptions = true
         }
         resolve(items['options'])
     })})
-    const options = await getOptions
-    if(noOptions){
-        active = defaultOptions['active']
-    }
-    else{
-        active = options['active']
-    }
+    options = await getOptions
+    if(options!=undefined){active = options['active']}
     if(!active){return}
     //Check if url is vk messenger page
     let getCorrectUrl = new Promise((resolve, reject)=>chrome.runtime.onMessage.addListener((obj, sender, response) => {
@@ -60,10 +53,12 @@ class banButton{
             if(isIM){
                 main()
                 blockPreview()
+                console.log('extension injected succesfully')
             }
             resolve(isIM)
         }
         if(type === "BLOCKEDUSERSCHANGED"){
+            console.log(blockedUsers, tabURL)
             blockedUsers = tabURL
             blockMessageBlocks(true)
         }
@@ -104,14 +99,34 @@ async function main(){
     //Await to get blocked users from chrome sync storage
     let getBlockedUsers = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
         if(items['blockedU']==undefined || items['blockedU'][0]==undefined){
-            chrome.storage.sync.set({})
+            chrome.storage.sync.set({'blockedU':[]})
             console.log('No blocked users to read')
             resolve(false)
-            return
         }
-        resolve(Object.values(items['blockedU']))
+        else{
+            resolve(Object.values(items['blockedU'][0]))
+        }
     })})
-    blockedUsers = await getBlockedUsers;
+    blockedUsers = await getBlockedUsers
+    console.log(blockedUsers)
+    let newq = ''
+    for(i in blockedUsers){
+        newq+=blockedUsers[i]
+    }
+    console.log(newq, )
+    if(blockedUsers[0]!=undefined && blockedUsers[0].length==1){
+        chrome.storage.sync.get(null,(items)=>{
+            if(items['blockedU']==undefined || items['blockedU'][0]==undefined){
+                chrome.storage.sync.set({})
+                console.log('No blocked users to read')
+                resolve(false)
+                return
+            }
+            chrome.storage.sync.set({'blockedU':[]})
+        })
+        console.log('Script error, please reload page')
+        return
+    }
     getBlockedUsersNicknames()
     //Add listeners for vk popup and new messages in chat container
     const popup = document.getElementById('box_layer_wrap')
@@ -174,6 +189,7 @@ function onBanButtonPressed(input){
         button.value = '📢 Unblock'
     }
     //Stores changed blocked users var in chrome sync storage
+    console.log(blockedUsers) 
     console.log(chrome.storage.sync.set({'blockedU': [blockedUsers]}))
     //Redones block message blocks with new block list
     blockMessageBlocks(true)
