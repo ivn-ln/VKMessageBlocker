@@ -8,11 +8,38 @@ const defaultOptions = {
     blockedText: 'Сообщение заблокировано',
     shouldCollapse: false,
     shouldBlockPreview: true,
+    lang: 'rus'
 };
 
+class lang{
+    constructor(userListStr, IMerrorStr){
+        this.userListStr = userListStr
+        this.IMerrorStr = IMerrorStr
+    }
+}
+
+const ru = new lang('Заблокированные пользователи', 'Ошибка, это не страница VK');
+const eng = new lang('Blocked users', 'Error, this is not a VK page');
+let globalLang = eng;
 let options = defaultOptions;
 
 (async()=>{
+    //Language to be added: dynamic language change, content script language change and 
+    const buttonLang = document.getElementsByClassName('buttonLang')[0]
+    addLangAnimation(buttonLang)
+    let getOptions = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
+        console.log(items)
+        if(items['options']==undefined || Object.keys(items['options'])[0]==undefined){
+            console.log('No options set')
+        }
+        resolve(items['options'])
+    })})
+    options = await getOptions
+    buttonLang.classList.add(options['lang'])
+    if(options['lang']=='rus'){
+        globalLang = ru
+    }
+    document.getElementsByClassName('home-text7')[0].innerHTML = globalLang.userListStr
     chrome.tabs.query({'active': true}, (tabs) => {
         const tabId = tabs[0].url
         const isIM = tabId.includes('vk.com/')
@@ -21,7 +48,7 @@ let options = defaultOptions;
             userComponentTemplate.setAttribute('style', 'opacity: 0; height:0px')
             const errorMessage = document.createElement('h2')
             errorMessage.classList = 'home-text3'
-            errorMessage.innerHTML = 'Error: not a VK page'
+            errorMessage.innerHTML = globalLang.IMerrorStr
             document.getElementsByClassName('onSwitch')[0].replaceWith(errorMessage)
             return
         }
@@ -81,14 +108,6 @@ let options = defaultOptions;
     }
     checkNoBlockedUsers('No blocked users')
     userComponentTemplate.setAttribute('style', 'opacity: 0; height:0px')
-    let getOptions = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
-        console.log(items)
-        if(items['options']==undefined || Object.keys(items['options'])[0]==undefined){
-            console.log('No options set')
-        }
-        resolve(items['options'])
-    })})
-    options = await getOptions
     if(options==undefined){options=defaultOptions; return}
     if(options['active']){document.getElementsByClassName('onSwitch')[0].click()}
 })()
@@ -98,12 +117,38 @@ function checkNoBlockedUsers(newText){
 }
 
 function updateOptions(options){
+    console.log(chrome.storage.sync.set({'options': options}))
     chrome.tabs.query({'active': true}, (tabs) => {
         const tabId = tabs[0]['id']
         chrome.tabs.sendMessage(tabId, {
             type: "OPTIONSCHANGED",
             tabURL: options,
         });
+    })
+}
+
+function addLangAnimation(buttonLang){
+    buttonLang.addEventListener('click', ()=>{
+        let lang = ''
+        const newButtonLang = buttonLang.cloneNode(true)
+        buttonLang.parentElement.replaceChild(newButtonLang, buttonLang)
+        if(newButtonLang.classList.contains('rus')){
+            lang = 'eng'
+            newButtonLang.classList.remove('rus')
+            newButtonLang.classList.add('eng')
+        }
+        else{
+            lang = 'rus'
+            newButtonLang.classList.remove('eng')
+            newButtonLang.classList.add('rus')
+        }
+        addLangAnimation(newButtonLang)
+        if(lang==''){return}
+        options['lang'] = lang
+        if(options['lang']=='ru'){
+            globalLang = ru
+        }
+        updateOptions(options)
     })
 }
 
@@ -130,8 +175,11 @@ async function getUsersData(blockedUsers){
     if(blockedUsers.length==0){return}
     let blockedUsersObjects = {}
     let userIDsString = ''
+    let lang = 3
+    if(globalLang==ru){lang = 0}
     for(i in blockedUsers){userIDsString+=blockedUsers[i].replace('/', '')+','}
     const getUsersDataPromise = new Promise((resolve, reject)=> fetch('https://api.vk.com/method/users.get?' + new URLSearchParams({
+        lang: lang,
         access_token: '770db9af770db9af770db9af3674199ce57770d770db9af1364ea8893c52eef5a3b318e',
         user_ids: userIDsString,
         fields: 'nickname, photo_max',
@@ -181,6 +229,5 @@ function onEnableSwitchClick(input){
         button.classList.add('disabled')
         button.classList.remove('enabled')
     }
-    console.log(chrome.storage.sync.set({'options': options}))
     updateOptions(options)
 }

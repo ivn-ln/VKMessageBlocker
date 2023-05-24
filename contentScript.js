@@ -7,6 +7,7 @@ const defaultOptions = {
     blockedText: 'Сообщение заблокировано',
     shouldCollapse: false,
     shouldBlockPreview: true,
+    lang: 'rus'
 };
 
 let active = defaultOptions['active'];
@@ -16,6 +17,7 @@ let shouldBLockMedia = defaultOptions['shouldBLockMedia'];
 let blockedText = defaultOptions['blockedText'];
 let shouldCollapse = defaultOptions['shouldCollapse'];
 let shouldBlockPreview = defaultOptions['shouldBlockPreview'];
+let lang = defaultOptions['lang'];
 
 let blockedUsers = [];
 

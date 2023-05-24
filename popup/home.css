@@ -1,5 +1,7 @@
 body{
   height: 250px;
+  animation: pop2 1.0s 1 cubic-bezier(0.075, 0.82, 0.165, 1);
+  background-color: #222222;
 }
 .componentName, .componentPFP, .component-trash{
   cursor: pointer;
@@ -73,12 +75,10 @@ body{
   transition: all 1s;
 }
 .home-button1.disabled{
+  animation-direction: reverse;
   animation: popOut 0.5s 1;
 }
-body{
-  animation: pop2 1.0s 1 cubic-bezier(0.075, 0.82, 0.165, 1);
-  background-color: #222222;
-}
+
 @keyframes pop2{
   from{
     transform: scale(0, 0);
@@ -110,6 +110,14 @@ body{
     transform: scale(1);
   }
 }
+@keyframes fadeIn{
+  from{
+    opacity: 0;
+  }
+  to{
+    opacity: 1;
+  }
+}
 
 
 h2, .newComponent{
@@ -119,6 +127,19 @@ h2, .newComponent{
   transform: scale(1, 1);
   opacity: 1;
   margin-block-end: 10px;
+}
+.buttonLang{
+  animation: nones;
+}
+
+.rus{
+  animation: pop 0.5s 1;
+  background-image: url("public/playground_assets/flag_ru.svg");
+}
+
+.eng{
+  animation: pop 0.5s 1;
+  background-image: url("public/playground_assets/flag_us.svg");
 }
 
 .hidden{
