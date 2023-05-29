@@ -43,14 +43,13 @@ class banButton{
     })})
     options = await getOptions
     if(options!=undefined){active = options['active']}
-    //Check if url is vk messenger page
+    //Reactions to background script messages
     let getCorrectUrl = new Promise((resolve, reject)=>chrome.runtime.onMessage.addListener((obj, sender, response) => {
         const{type, tabURL}=obj
         console.log(type)
         if(type === "NEW"){
+            //Check if url is vk messenger page
             const isIM = tabURL.includes('vk.com/im')|| tabURL.includes('https://vk.com/al_im')
-            //Need to check here, otherwise won't execute on message
-            console.log('Msg received, isIM: ', isIM)
             if(isIM){
                 if(active){main()
                     //blockPreview()
@@ -70,7 +69,11 @@ class banButton{
                 main()
                 //blockMessageBlocks()
             }
-            else{blockMessageBlocks(shouldUnblockRest=true, customBlockedList=[])}
+            else{
+                blockMessageBlocks(shouldUnblockRest=true, customBlockedList=[])
+                const messageBlocksContainer = document.getElementsByClassName('_im_peer_history im-page-chat-contain glubs-container')[0]
+                messageBlocksContainer.removeEventListener('DOMNodeInserted', blockNewMessages)
+            }
         }
     }))
     const isIM = await getCorrectUrl

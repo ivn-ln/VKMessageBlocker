@@ -12,19 +12,19 @@ const defaultOptions = {
 };
 
 class lang{
-    constructor(userListStr, IMerrorStr){
+    constructor(userListStr, IMerrorStr, noUsersStr){
         this.userListStr = userListStr
         this.IMerrorStr = IMerrorStr
+        this.noUsersStr = noUsersStr
     }
 }
 
-const ru = new lang('Заблокированные пользователи', 'Ошибка, это не страница VK');
-const eng = new lang('Blocked users', 'Error, this is not a VK page');
+const ru = new lang('Заблокированные пользователи', 'Ошибка, это не страница VK', 'Нет заблокированных пользователей');
+const eng = new lang('Blocked users', 'Error, this is not a VK page', 'No blocked users');
 let globalLang = eng;
 let options = defaultOptions;
 
 (async()=>{
-    //Language to be added: dynamic language change, content script language change and 
     const buttonLang = document.getElementsByClassName('buttonLang')[0]
     addLangAnimation(buttonLang)
     let getOptions = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
@@ -47,7 +47,7 @@ let options = defaultOptions;
             const userComponentTemplate = document.getElementsByClassName('app-component-container')[0]
             userComponentTemplate.setAttribute('style', 'opacity: 0; height:0px')
             const errorMessage = document.createElement('h2')
-            errorMessage.classList = 'home-text3'
+            errorMessage.classList = 'home-text3 error'
             errorMessage.innerHTML = globalLang.IMerrorStr
             document.getElementsByClassName('onSwitch')[0].replaceWith(errorMessage)
             return
@@ -106,14 +106,17 @@ let options = defaultOptions;
         newUserPFP.setAttribute('src', userObject['PFP'])
         userComponentTemplate.parentElement.appendChild(newUserComponent)
     }
-    checkNoBlockedUsers('No blocked users')
+    checkNoBlockedUsers(globalLang.noUsersStr)
     userComponentTemplate.setAttribute('style', 'opacity: 0; height:0px')
     if(options==undefined){options=defaultOptions; return}
     if(options['active']){document.getElementsByClassName('onSwitch')[0].click()}
 })()
 
 function checkNoBlockedUsers(newText){
-    if(Object.keys(blockedUsers).length==0){document.getElementsByClassName('home-text7')[0].innerHTML = newText}
+    if(Object.keys(blockedUsers).length==0){
+        document.getElementsByClassName('home-text7')[0].innerHTML = newText
+        document.querySelectorAll('h2')[0].classList.add('nou')
+    }
 }
 
 function updateOptions(options){
@@ -125,11 +128,15 @@ function updateOptions(options){
             tabURL: options,
         });
     })
+    console.log(options)
 }
 
 function addLangAnimation(buttonLang){
     buttonLang.addEventListener('click', ()=>{
         let lang = ''
+        const errorMsg = document.getElementsByClassName('error')[0]
+        const blockedUsers = document.querySelectorAll('h2')[0]
+        const noUsers = document.getElementsByClassName('nou')[0]
         const newButtonLang = buttonLang.cloneNode(true)
         buttonLang.parentElement.replaceChild(newButtonLang, buttonLang)
         if(newButtonLang.classList.contains('rus')){
@@ -145,8 +152,19 @@ function addLangAnimation(buttonLang){
         addLangAnimation(newButtonLang)
         if(lang==''){return}
         options['lang'] = lang
-        if(options['lang']=='ru'){
+        if(lang=='rus'){
             globalLang = ru
+        }else{
+            globalLang = eng
+        }
+
+        console.log(globalLang)
+        blockedUsers.innerHTML = globalLang.userListStr
+        if (errorMsg!=undefined){
+            errorMsg.innerHTML = globalLang.IMerrorStr
+        }
+        if (noUsers!=undefined){
+            noUsers.innerHTML = globalLang.noUsersStr
         }
         updateOptions(options)
     })
