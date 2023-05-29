@@ -35,6 +35,7 @@ let options = defaultOptions;
         resolve(items['options'])
     })})
     options = await getOptions
+    if(options==undefined){options=defaultOptions}
     buttonLang.classList.add(options['lang'])
     if(options['lang']=='rus'){
         globalLang = ru

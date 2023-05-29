@@ -34,6 +34,7 @@ class banButton{
 
 
 (async ()=>{
+    //chrome.storage.sync.clear()
     let getOptions = new Promise((resolve, reject)=>{chrome.storage.sync.get(null,(items)=>{
         console.log(items)
         if(items['options']==undefined || Object.keys(items['options'])[0]==undefined){
