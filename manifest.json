@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
-    "name": "VK Message Blocker",
-    "description": "Blocks messages from select VK users",
+    "name": "__MSG_appName__",
+    "description": "__MSG_appDesc__",
     "permissions": ["storage", "tabs"],
     "version": "1.2",
     "host_permissions": [
@@ -24,5 +24,6 @@
         "32": "source/orig.png",
         "64": "source/orig.png",
         "128": "source/orig.png"
-    }
+    },
+    "default_locale": "en"
 }

@@ -1,5 +1,6 @@
 # Chrome extension for blocking vk messages from selected user
 ## Latest version: 1.2
+## [Chrome download page](https://chrome.google.com/webstore/detail/vk-message-blocker/okhkmjjgjjlmnjnahfclohidlgokppdp)
 ### Working functionality
 - Message text replacement with block message for code defined users
 - Popup UI
